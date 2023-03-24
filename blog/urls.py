@@ -6,6 +6,16 @@ from .views import (
     BlogUpdateView,
     BlogDeleteView, # new
 )
+# from django.contrib.auth.models import User
+# from django.core.paginator import Paginator
+#
+# users = User.objects.all()
+#
+# paginator = Paginator(users, 10)
+#
+# page_obj = paginator.get_page(99)
+#
+# print(page_obj)
 
 urlpatterns = [
     path("post/new/", BlogCreateView.as_view(), name="post_new"), # new

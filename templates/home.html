@@ -7,6 +7,8 @@
 <div class="post-entry">
     <h2><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h2>
     <p>{{ post.body }}</p>
+
 </div>
 {% endfor %}
+{% include "pagination.html" with page=posts %}
 {% endblock content %}
