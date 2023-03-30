@@ -1,55 +1,70 @@
 from django.shortcuts import render
+from django.views import View
 from django.views.generic import ListView, DetailView # new
-from django.views.generic.edit import CreateView, UpdateView, DeleteView  # new
-from django.urls import reverse_lazy # new
+from django.views.generic.detail import SingleObjectMixin
+from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView  # new
+from django.urls import reverse_lazy, reverse  # new
 
-from .models import Post, Comment
 from .forms import CommentForm
+from .models import Post, Comment
 
 
-def add_comment(View):
-    if request.method == 'POST':
-        comment_form = CommentForm(data=request.POST)
-        if comment_form.is_valid():
-            # Create Comment object but don't save to database yet
-            new_comment = comment_form.save(commit=False)
-            # Assign the current post to the comment
-            new_comment.post = Post.filter(request.post)
-            # Save the comment to the database
-            new_comment.save()
-
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render
-
-
-def post_list(request):
-    object_list = Post.published.all()
-    paginator = Paginator(object_list, 3)  # 3 posts in each page
-    page = request.GET.get('page')
-    try:
-        posts = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer deliver the first page
-        posts = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range deliver last page of results
-        posts = paginator.page(paginator.num_pages)
-    return render(request,
-                  'blog/templates/home.html',
-                  {'page': page,
-                   'posts': posts})
-
-
-class BlogListView(ListView):
+class PostListView(ListView):
     paginate_by = 3
     model = Post
     template_name = "home.html"
 
 
-class BlogDetailView(DetailView): # new
+class PostDetailView(DetailView): # new
     model = Post
     template_name = "post_detail.html"
 
+
+class PostDisplay(DetailView):
+    model = Post
+    template_name = 'post_detail.html'
+    context_object_name = 'post'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = CommentForm()
+        return context
+
+
+class PostComment(SingleObjectMixin, FormView):
+    model = Post
+    form_class = CommentForm
+    template_name = 'post_detail.html'
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().post(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(PostComment, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
+    def form_valid(self, form):
+        comment = form.save(commit=False)
+        comment.post = self.object
+        comment.save()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        post = self.get_object()
+        return reverse('post_detail', kwargs={'pk': post.pk}) + '#comments'
+
+
+class PostDetailView(View):
+
+    def get(self, request, *args, **kwargs):
+        view = PostDisplay.as_view()
+        return view(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        view = PostComment.as_view()
+        return view(request, *args, **kwargs)
 
 class BlogCreateView(CreateView): # new
     model = Post

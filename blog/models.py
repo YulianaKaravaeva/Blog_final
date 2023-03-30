@@ -1,11 +1,10 @@
-from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 
 
 class Post(models.Model):
-    title = models.CharField(max_length=200)  # заголовок
-    author = models.ForeignKey(  # автор (отношение многие-к-одному)
+    title = models.CharField(max_length=200)
+    author = models.ForeignKey(
         "auth.User",
         on_delete=models.CASCADE,
     )
@@ -19,17 +18,13 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    author = models.ForeignKey(  # автор (отношение многие-к-одному)
-        "auth.User",
-        on_delete=models.CASCADE,
-        default=User.objects.first().pk
-    )
-    post = models.ForeignKey(Post, related_name='comments', default=Post.objects.first().pk, on_delete=models.CASCADE)
-    title = models.CharField(max_length=80)
-    body = models.TextField()
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    comment = models.TextField(max_length=400)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_on']
 
     def __str__(self):
-        return 'Comment by {} on {}'.format(self.title, self.post)
-
-    def get_absolute_url(self):
-        return reverse("post_detail", kwargs={"pk": self.post.pk})
+        return self.comment[:60]
