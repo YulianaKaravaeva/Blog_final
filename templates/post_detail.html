@@ -6,26 +6,24 @@
     <p>{{ post.body }}</p>
 </div>
 
-{% with comments.count as total_comments %}
-    <h2>
-        {{ total_comments }} comment{{ total_comments|pluralize }}
-    </h2>
-{% endwith %}
+<hr>
+<div class="comments">
+    <h2 id="comments">Comments</h2>
+    {% for comment in post.comment_set.all %}
+    <b>{{ comment.name }}</b>
+    <p>{{ comment.comment }}</p>
+    {% empty %}
+    <p>Пока комментариев к данному посту нет</p>
+    {% endfor %}
+</div>
 
-{% for comment in comments %}
-    <div class="comment">
-        <p class="info">
-            Comment {{ forloop.counter }} by {{ comment.title }}
-            {{ comment.created }}
-        </p>
-        {{ comment.body|linebreaks }}
-    </div>
-{% empty %}
-    <p>There are no comments yet.</p>
-{% endfor %}
+<hr>
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Save">
+</form>
 
-
-<p><a href="{% url 'post_comment' post.pk %}">+ Comment</a></p>
 <p><a href="{% url 'post_edit' post.pk %}">+ Edit Blog Post</a></p>
 <p><a href="{% url 'post_delete' post.pk %}">+ Delete Blog Post</a></p>
 
