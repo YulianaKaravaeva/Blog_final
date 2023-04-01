@@ -9,11 +9,14 @@
 <hr>
 <div class="comments">
     <h2 id="comments">Comments</h2>
+
     {% for comment in post.comment_set.all %}
-    <b>{{ comment.name }}</b>
+    <b>{{ comment.name }}</b> said <b>{{ comment.created_on|timesince }} ago</b>
     <p>{{ comment.comment }}</p>
+    <p><a href="{% url 'comment_delete' comment.pk %}">- Delete Comment</a></p>
+
     {% empty %}
-    <p>Пока комментариев к данному посту нет</p>
+    <p>Empty</p>
     {% endfor %}
 </div>
 
@@ -24,8 +27,8 @@
     <input type="submit" value="Save">
 </form>
 
-<p><a href="{% url 'post_edit' post.pk %}">+ Edit Blog Post</a></p>
-<p><a href="{% url 'post_delete' post.pk %}">+ Delete Blog Post</a></p>
+<p><a href="{% url 'post_edit' post.pk %}">* Edit Blog Post</a></p>
+<p><a href="{% url 'post_delete' post.pk %}">- Delete Blog Post</a></p>
 
 
 {% endblock content %}

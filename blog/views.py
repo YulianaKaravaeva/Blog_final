@@ -38,6 +38,11 @@ class PostComment(SingleObjectMixin, FormView):
         self.object = self.get_object()
         return super().post(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        kwargs = super(PostComment, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
     # Для правильной обработки данных формы и сохранения нового комментария в базе данных используется form_valid()
     # метод, который вызывается после успешного завершения проверки формы
     def form_valid(self, form):
@@ -81,8 +86,8 @@ class BlogDeleteView(DeleteView): # new
     success_url = reverse_lazy("home")
 
 
-class BlogCommentView(CreateView): # new
+class CommentDeleteView(DeleteView): # new
     model = Comment
-    template_name = "post_comment.html"
-    fields = ["title", "author", "body"]
+    template_name = "comment_delete.html"
+    success_url = reverse_lazy("home")
 
